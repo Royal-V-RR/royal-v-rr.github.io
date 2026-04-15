@@ -84,7 +84,9 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 /* NOTIF */
 .notif{position:fixed;bottom:18px;right:18px;background:var(--card);border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:11px;padding:8px 14px;border-radius:3px;letter-spacing:1px;opacity:0;transform:translateY(8px);transition:all .25s;z-index:10000;pointer-events:none;}
 .notif.on{opacity:1;transform:translateY(0);}
-/* SCROLLBARS */
+.rc.top{border-left:2px solid #ffaa00;background:rgba(255,170,0,.04);}
+.rc.top .cname{color:#ffaa00;}
+.dict-badge{font-size:9px;letter-spacing:1px;padding:2px 7px;border-radius:2px;background:rgba(0,255,195,.08);border:1px solid rgba(0,255,195,.25);color:var(--accent);font-family:'Share Tech Mono',monospace;}
 ::-webkit-scrollbar{width:3px;height:3px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
@@ -114,6 +116,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="hdr-right">
     <div class="spill" id="totalCount">? decoders</div>
     <div class="spill" id="activeCount">0 results</div>
+    <div class="dict-badge" title="Real-time dictionary scoring via Datamuse API">&#9670; DICT</div>
   </div>
 </div>
 <div class="pbar"><div class="pfill" id="pfill"></div></div>
@@ -126,6 +129,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <input class="sinp" id="searchInput" placeholder="Search…" oninput="render()">
       <button class="btn bw" style="flex:none;padding:6px 10px;font-size:11px;" onclick="fetchCorrect()">🔍 Fetch Correct</button>
       <button class="btn bd" style="flex:none;padding:6px 10px;font-size:11px;" onclick="checkYoutube()">▶ URL Check</button>
+      <button class="btn bs" style="flex:none;padding:6px 10px;font-size:11px;" id="errToggleBtn" onclick="toggleErrors()">⊘ Hide Errors</button>
       <button class="btn bs" style="flex:none;padding:6px 10px;font-size:11px;" onclick="copyWords()">⎘ Copy Words</button>
     </div>
     <div class="rgrid" id="rgrid">
@@ -140,33 +144,74 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <div class="notif" id="notif"></div>
 
 <script>
-// ─── WORD DETECTION ───────────────────────────────────────────
-const WL=new Set(['the','be','to','of','and','a','in','that','have','it','for','not','on','with','he','as','you','do','at','this','but','his','by','from','they','we','say','her','she','or','an','will','my','one','all','would','there','their','what','so','up','out','if','about','who','get','which','go','me','when','make','can','like','time','no','just','him','know','take','people','into','year','your','good','some','could','them','see','other','than','then','now','look','only','come','its','over','think','also','back','after','use','two','how','our','work','first','well','way','even','new','want','because','any','these','give','day','most','us','hello','world','test','yes','ok','here','is','was','are','were','been','has','had','did','does','said','went','came','made','found','tell','show','called','help','hand','name','such','long','down','life','home','move','point','play','small','number','off','always','those','both','each','more','key','data','text','code','file','info','love','dear','please','thank','sorry','hi','hey','greetings','message','secret','hidden','encoded','decode','password','access','granted','flag','start','end','begin','stop','open','close','read','write','true','false','error','warning','note','important','urgent','private','public','send','receive','right','think','around','every','still','should','between','never','same','last','great','little','own','old','next','many','high','place','hold','free','real','few','hear','city','tree','cross','hard','light','voice','power','town','fine','drive','short','road',
-// Spanish
-'el','la','los','las','un','una','del','en','que','se','no','con','por','para','como','pero','su','sus','al','le','les','es','son','fue','era','han','hola','mundo','gracias','favor','buenos','dias','esto','eso','todo','nada','bien','mal','grande','mucho','poco','aqui','alla','cuando','donde','quien','hombre','mujer','casa','agua','amor','vida','tiempo','ciudad','trabajo',
-// French
-'le','la','les','une','des','du','en','qui','est','pas','sur','avec','dans','par','au','aux','mais','plus','tout','bien','faire','avoir','bonjour','merci','oui','non','ville','maison','homme','femme','enfant','nouveau','bon','autre','tres',
-// German
-'der','die','das','ein','eine','und','zu','den','von','des','mit','auf','ich','du','er','wir','ihr','haben','sein','werden','nicht','auch','hallo','welt','danke','bitte','gut','ja','nein','haus','mann','frau','kind','stadt','hier','dort','noch',
-// Portuguese
-'os','as','um','uma','do','da','em','com','mas','ola','mundo','obrigado','sim','nao','homem','mulher','filho',
-// Italian
-'il','lo','gli','le','uno','del','della','che','non','per','su','da','si','sono','ciao','grazie','prego','fare','avere',
-// Dutch
-'het','een','van','op','dat','zijn','voor','met','als','maar','wat','wie','ook','wel','niet','kan','dit','die','hallo',
-// Tech
-'http','https','www','com','org','net','html','css','json','xml','utf','ascii','base','null','true','false','ok','url','api','get','post','user','pass','admin','root','home','index','main','app']);
+// ─── DICTIONARY & WORD SCORING ────────────────────────────────
+// Fast local fallback for common words (immediate sync check)
+const LOCAL_DICT=new Set(['the','be','to','of','and','a','in','that','have','it','for','not','on','with','he','as','you','do','at','this','but','his','by','from','they','we','say','her','she','or','an','will','my','one','all','would','there','their','what','so','up','out','if','about','who','get','which','go','me','when','make','can','like','time','no','just','him','know','take','people','into','year','your','good','some','could','them','see','other','than','then','now','look','only','come','its','over','think','also','back','after','use','two','how','our','work','first','well','way','even','new','want','because','any','these','give','day','most','us','hello','world','test','yes','ok','here','is','was','are','were','been','has','had','did','does','said','went','came','made','found','tell','show','called','help','hand','name','such','long','down','life','home','move','point','play','small','number','off','always','those','both','each','more','key','data','text','code','file','info','love','dear','please','thank','sorry','hi','hey','message','secret','hidden','decode','password','access','flag','start','end','begin','stop','open','close','read','write','true','false','error','warning','note','important','urgent','private','public','send','receive','right','around','every','still','should','between','never','same','last','great','little','own','old','next','many','high','place','hold','free','real','few','hear','city','tree','hard','light','voice','power','town','fine','drive','short','road','http','https','www','com','org','net','html','css','json','xml','utf','ascii','null','url','api','get','post','user','admin','root','index','main','app',
+'el','la','los','las','un','una','del','en','que','se','no','con','por','para','como','pero','su','sus','al','le','les','es','son','fue','era','hola','mundo','gracias','bien','mal','grande','mucho','poco','aqui','alla','cuando','donde','quien','hombre','mujer','casa','agua','amor','vida','tiempo','ciudad','trabajo',
+'le','les','une','des','du','qui','est','pas','sur','avec','dans','par','au','aux','mais','plus','tout','faire','avoir','bonjour','merci','oui','non','ville','maison','homme','femme','bon','tres',
+'der','die','das','ein','eine','und','zu','den','von','des','mit','auf','ich','du','er','wir','ihr','nicht','auch','hallo','welt','danke','bitte','gut','ja','nein','haus','mann','frau','kind','stadt','hier','dort',
+'http','https','www','com','org','net','null','true','false','ok','url','api','admin','root','app']);
 
-function hasWords(s){
-  if(!s||s.length<2)return false;
+// Cache for dictionary lookups: word -> boolean
+const dictCache = new Map();
+// In-flight batch requests
+let batchQueue = [];
+let batchTimer = null;
+
+async function dictLookup(words) {
+  // Filter to uncached, alpha-only words of length 3+
+  const toFetch = [...new Set(words.filter(w=>w.length>=3&&/^[a-z]+$/.test(w)&&!dictCache.has(w)))];
+  if (!toFetch.length) return;
+  // Use Datamuse /words API with max=1 to check existence
+  const chunks = [];
+  for (let i=0;i<toFetch.length;i+=10) chunks.push(toFetch.slice(i,i+10));
+  await Promise.all(chunks.map(async chunk => {
+    await Promise.all(chunk.map(async word => {
+      try {
+        const r = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(word)}&max=1`);
+        const data = await r.json();
+        dictCache.set(word, data.length>0 && data[0].word.toLowerCase()===word);
+      } catch { dictCache.set(word, LOCAL_DICT.has(word)); }
+    }));
+  }));
+}
+
+// Sync word score: count known words (fast, uses cache + local dict)
+function wordScore(s) {
+  if(!s||s.length<2) return 0;
   const pr=(s.match(/[\x20-\x7E\u00C0-\u024F]/g)||[]).length;
-  if(s.length>4&&pr/s.length<0.55)return false;
-  const w=s.toLowerCase().replace(/[^a-z\u00c0-\u024f\s]/g,' ').split(/\s+/).filter(x=>x.length>=2);
-  if(w.some(x=>WL.has(x)))return true;
-  return w.filter(x=>x.length>=5).some(x=>{
-    const v=(x.match(/[aeiouyáéíóúàèìòùâêîôûäëïöü]/g)||[]).length;
-    return v>=1&&new Set(x).size>3;
-  });
+  if(s.length>4&&pr/s.length<0.55) return 0;
+  const words = s.toLowerCase().replace(/[^a-z\u00c0-\u024f\s]/g,' ').split(/\s+/).filter(x=>x.length>=2);
+  let score = 0;
+  for (const w of words) {
+    if (LOCAL_DICT.has(w)) { score++; continue; }
+    if (dictCache.has(w)) { if(dictCache.get(w)) score++; continue; }
+    // Heuristic for uncached: vowel ratio check
+    const v=(w.match(/[aeiouy]/g)||[]).length;
+    if(w.length>=4&&v>=1&&new Set(w).size>3) score+=0.3;
+  }
+  return score;
+}
+
+function hasWords(s) { return wordScore(s)>=1; }
+
+// Async: fetch dictionary for all decoded results, then re-rank
+async function enrichWithDictionary(resultsList) {
+  const allWords = [];
+  for (const r of resultsList) {
+    if (!r.err) {
+      const ws = r.out.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(x=>x.length>=3&&/^[a-z]+$/.test(x));
+      allWords.push(...ws);
+    }
+  }
+  await dictLookup([...new Set(allWords)]);
+  // Re-score after lookup
+  for (const r of resultsList) {
+    if (!r.err) {
+      r.score = wordScore(r.out);
+      r.hw = r.score >= 1;
+    } else { r.score = 0; }
+  }
 }
 
 // ─── BYTE HELPERS ─────────────────────────────────────────────
@@ -364,6 +409,7 @@ document.getElementById('totalCount').textContent=DECODERS.length+' decoders';
 // ─── STATE ────────────────────────────────────────────────────
 let results=[];
 let activeCats=new Set(CATS.map(c=>c.id));
+let showErrors=true;
 
 // ─── PANEL HTML ───────────────────────────────────────────────
 function panelHTML(){
@@ -379,6 +425,7 @@ function panelHTML(){
   <div class="si">Words:<b id="si1">0</b></div>
   <div class="si">Errors:<b id="si2">0</b></div>
   <div class="si">YT:<b id="si3">0</b></div>
+  <div class="si">Top Score:<b id="si4">0</b></div>
 </div>
 <div style="padding-top:8px;border-top:1px solid var(--border);font-size:9px;color:var(--muted);letter-spacing:1px;line-height:1.9;">Results appear instantly on the right.<br>Ctrl/⌘+Enter to decode.</div>`;
 }
@@ -407,7 +454,7 @@ function buildChips(){
 }
 
 // ─── DECODE ───────────────────────────────────────────────────
-function decodeAll(){
+async function decodeAll(){
   let input='';document.querySelectorAll('#inputText').forEach(el=>{if(el.value.trim())input=el.value;});
   let key='';document.querySelectorAll('#cipherKey').forEach(el=>{if(el.value)key=el.value;});
   if(!input.trim()){notify('No input provided');return;}
@@ -416,17 +463,33 @@ function decodeAll(){
     let out,err=false;
     try{out=dec.fn(input,key);if(out==null)throw new Error('null');out=String(out);}
     catch(e){out='[Error: '+e.message+']';err=true;}
-    results.push({id:dec.id,name:dec.name,cat:dec.cat,out,err,hw:!err&&hasWords(out),yt:false});
+    const sc=err?0:wordScore(out);
+    results.push({id:dec.id,name:dec.name,cat:dec.cat,out,err,hw:!err&&sc>=1,score:sc,yt:false});
   }
-  const pf=document.getElementById('pfill');pf.style.width='100%';setTimeout(()=>pf.style.width='0%',1200);
+  const pf=document.getElementById('pfill');pf.style.width='60%';
   render();updateStats();closeDr();
-  notify('Decoded — '+results.filter(r=>r.hw).length+' contain words');
+  notify('Checking dictionary\u2026');
+  enrichWithDictionary(results).then(()=>{
+    sortResults();
+    pf.style.width='100%';setTimeout(()=>pf.style.width='0%',600);
+    render();updateStats();
+    notify('Done \u2014 '+results.filter(r=>r.hw).length+' contain words');
+  });
+}
+
+function sortResults(){
+  results.sort((a,b)=>{
+    if(a.err&&!b.err)return 1;
+    if(!a.err&&b.err)return -1;
+    return b.score-a.score;
+  });
 }
 
 // ─── FETCH CORRECT ────────────────────────────────────────────
 function fetchCorrect(){
   if(!results.length){notify('Decode first');return;}
   const b=results.length;results=results.filter(r=>r.hw);
+  sortResults();
   render();updateStats();notify(`Kept ${results.length} of ${b} with words`);
 }
 
@@ -464,20 +527,52 @@ function render(){
       :'<div class="empty"><div class="eg">{ ? }</div><div class="em">Awaiting Input</div><div class="es">Paste encoded text and press Decode All</div></div>';
     return;
   }
-  const grp={};CATS.forEach(c=>grp[c.id]=[]);
-  vis.forEach(r=>{if(grp[r.cat])grp[r.cat].push(r);});
+  // Sort vis: words first by score, errors last
+  vis.sort((a,b)=>{
+    if(a.err&&!b.err)return 1;
+    if(!a.err&&b.err)return -1;
+    return (b.score||0)-(a.score||0);
+  });
+
+  // Words-first grouping: split into words, no-words, errors
+  const wordHits=vis.filter(r=>r.hw&&!r.err);
+  const noWords=vis.filter(r=>!r.hw&&!r.err);
+  const errors=vis.filter(r=>r.err);
+
   let html='';
-  CATS.forEach(cat=>{
-    if(!grp[cat.id].length||!activeCats.has(cat.id))return;
-    html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl">${cat.label}</div><div class="cdiv-line"></div></div>`;
-    grp[cat.id].forEach(r=>{
-      const tags=r.yt?'<span class="ctag tyt">YouTube</span>':r.err?'<span class="ctag ter">Error</span>':r.hw?'<span class="ctag tw">Words ✓</span>':'';
-      html+=`<div class="rc ${r.hw&&!r.err?'hw':''} ${r.yt?'yt':''} ${r.err?'er':''}" id="c${r.id}">
-<div class="chdr"><span class="cnum">#${r.id}</span><span class="cname">${r.name}</span>${tags}<button class="cbtn" onclick="cp(${r.id},event)">COPY</button></div>
+
+  if(wordHits.length){
+    html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl" style="color:var(--accent)">&#9670; Word Matches — sorted by score</div><div class="cdiv-line"></div></div>`;
+    wordHits.forEach((r,idx)=>{
+      const sc=Math.round(r.score||0);
+      const scoreBar=sc>0?`<span class="ctag tw" style="font-size:9px;letter-spacing:0;padding:1px 6px;min-width:38px;text-align:center">${sc} word${sc!==1?'s':''}</span>`:'';
+      const ytTag=r.yt?'<span class="ctag tyt">YouTube</span>':'';
+      const topClass=idx===0&&sc>0?' top':'';
+      const topBadge=idx===0&&sc>0?'<span class="ctag" style="background:rgba(255,170,0,.15);color:#ffaa00;border:1px solid rgba(255,170,0,.4);font-size:9px">&#9650; TOP</span>':'';
+      html+=cardHTMLCls(r,`${ytTag}${topBadge}${scoreBar}`,topClass);
+    });
+  }
+
+  if(noWords.length){
+    html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl">No words detected</div><div class="cdiv-line"></div></div>`;
+    noWords.forEach(r=>{
+      const ytTag=r.yt?'<span class="ctag tyt">YouTube</span>':'';
+      html+=cardHTML(r,ytTag);
+    });
+  }
+
+  if(errors.length&&showErrors){
+    html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl" style="color:var(--muted)">Decode errors</div><div class="cdiv-line"></div></div>`;
+    errors.forEach(r=>{ html+=cardHTML(r,'<span class="ctag ter">Error</span>'); });
+  }
+
+  function cardHTMLCls(r,tags,extra=''){
+    return `<div class="rc ${r.hw&&!r.err?'hw':''} ${r.yt?'yt':''} ${r.err?'er':''}${extra}" id="c${r.id}">
+<div class="chdr"><span class="cnum" title="${r.cat}">#${r.id}</span><span class="cname">${r.name}</span>${tags}<button class="cbtn" onclick="cp(${r.id},event)">COPY</button></div>
 <textarea class="cta" readonly spellcheck="false"></textarea>
 </div>`;
-    });
-  });
+  }
+  function cardHTML(r,tags){ return cardHTMLCls(r,tags,''); }
   grid.innerHTML=html;
   // Set textarea values via JS (avoids HTML entity issues completely)
   vis.forEach(r=>{
@@ -495,9 +590,17 @@ function cp(id,e){
   });
 }
 
+function toggleErrors(){
+  showErrors=!showErrors;
+  const btn=document.getElementById('errToggleBtn');
+  if(btn)btn.textContent=showErrors?'\u2298 Hide Errors':'\u2295 Show Errors';
+  render();
+}
+
 function updateStats(){
-  const ids=['si0','si1','si2','si3'];
-  const vals=[results.length,results.filter(r=>r.hw).length,results.filter(r=>r.err).length,results.filter(r=>r.yt).length];
+  const ids=['si0','si1','si2','si3','si4'];
+  const topScore=results.filter(r=>r.hw).reduce((m,r)=>Math.max(m,r.score||0),0);
+  const vals=[results.length,results.filter(r=>r.hw).length,results.filter(r=>r.err).length,results.filter(r=>r.yt).length,Math.round(topScore)];
   ids.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=vals[i];});
 }
 
