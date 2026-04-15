@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,6 +11,7 @@
 :root{--bg:#0a0c10;--panel:#0f1318;--border:#1e2a38;--accent:#00ffc3;--accent2:#0088ff;--accent3:#ff4466;--text:#c8d8e8;--muted:#4a6070;--card:#111820;--card-hover:#161f2b;--tag:#0d2030;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:15px;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+.main{display:flex;flex:1;overflow:hidden;min-height:0;}
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999;}
 /* HEADER */
 .header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:linear-gradient(180deg,#0d1520,transparent);flex-shrink:0;}
@@ -21,7 +23,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .pbar{height:2px;background:var(--border);flex-shrink:0;}
 .pfill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%;transition:width .25s;}
 /* LAYOUT */
-.main{display:flex;flex:1;overflow:hidden;}
+.main{display:flex;flex:1;overflow:hidden;min-height:0;}
 /* LEFT */
 .lp{width:320px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px;gap:11px;overflow-y:auto;background:var(--panel);}
 .slabel{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
@@ -90,6 +92,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 ::-webkit-scrollbar{width:3px;height:3px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+/* SUBTITLE */
+.subtitle{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;font-family:'Share Tech Mono',monospace;opacity:0.7;}
+/* FOOTER */
+.site-footer{flex-shrink:0;border-top:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel);flex-wrap:wrap;}
+.footer-credit{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.footer-credit span{color:var(--accent);}
+.discord-btn{display:inline-flex;align-items:center;gap:6px;background:#5865F2;color:#fff;border:none;border-radius:4px;padding:6px 14px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;}
+.discord-btn:hover{background:#4752c4;box-shadow:0 0 12px rgba(88,101,242,.5);}
+.discord-btn svg{width:16px;height:16px;fill:#fff;flex-shrink:0;}
 /* MOBILE */
 .mob-btn{display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;border:none;border-radius:20px;padding:10px 22px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;cursor:pointer;z-index:900;box-shadow:0 4px 18px rgba(0,255,195,.4);}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:950;}
@@ -106,13 +117,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   .drawer.on{display:flex;}
   .logo{font-size:17px;}
   .tagline{display:none;}
+  .site-footer{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 16px 80px;}
+  .subtitle{font-size:8px;}
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div><div class="logo">DECODE<span>.</span>ALL</div><div class="tagline">Universal Decoder</div></div>
+  <div><div class="logo">DECODE<span>.</span>ALL</div><div class="tagline">Universal Decoder</div><div class="subtitle">(except I couldn't get the domain because I host it on github lol)</div></div>
   <div class="hdr-right">
     <div class="spill" id="totalCount">? decoders</div>
     <div class="spill" id="activeCount">0 results</div>
@@ -139,9 +152,18 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 </div>
 
 <button class="mob-btn" onclick="openDr()">⚡ Controls</button>
+
 <div class="overlay" id="ov" onclick="closeDr()"></div>
 <div class="drawer" id="dr"><div class="dhandle"></div><div id="drContent"></div></div>
 <div class="notif" id="notif"></div>
+
+<footer class="site-footer">
+  <div class="footer-credit">made by <span>royalvmusic</span> on discord!</div>
+  <a class="discord-btn" href="https://discord.gg/TWwVcFNvKk" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+    Join Discord
+  </a>
+</footer>
 
 <script>
 // ─── DICTIONARY & WORD SCORING ────────────────────────────────
@@ -415,6 +437,7 @@ let showErrors=true;
 function panelHTML(){
   return`<div class="slabel">Input</div>
 <div class="iwrap"><textarea id="inputText" placeholder="Paste encoded text…&#10;&#10;Try: SGVsbG8= (Base64)&#10;48 65 6c 6c 6f (Hex)&#10;Khoor Zruog (Caesar 3)"></textarea><div class="cc" id="charCount">0</div></div>
+
 <div class="krow"><div class="klabel">Key:</div><input id="cipherKey" type="text" placeholder="key for Vigenère, Columnar…"/></div>
 <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">Vigenère · Beaufort · Gronsfeld · Columnar</div>
 <div class="brow"><button class="btn bp" onclick="decodeAll()">⚡ Decode All</button><button class="btn bs" onclick="clearAll()">✕ Clear</button></div>
@@ -431,143 +454,144 @@ function panelHTML(){
 }
 
 function buildPanel(){
-  document.getElementById('lp').innerHTML=panelHTML();
-  document.getElementById('drContent').innerHTML=panelHTML();
-  document.querySelectorAll('#inputText').forEach(el=>el.addEventListener('input',()=>{document.querySelectorAll('#charCount').forEach(x=>x.textContent=el.value.length);}));
-  buildChips();
+document.getElementById(‘lp’).innerHTML=panelHTML();
+document.getElementById(‘drContent’).innerHTML=panelHTML();
+document.querySelectorAll(’#inputText’).forEach(el=>el.addEventListener(‘input’,()=>{document.querySelectorAll(’#charCount’).forEach(x=>x.textContent=el.value.length);}));
+buildChips();
 }
 
 function buildChips(){
-  document.querySelectorAll('#fgrid').forEach(g=>{
-    g.innerHTML='';
-    CATS.forEach(cat=>{
-      const c=document.createElement('div');
-      c.className='chip on';c.textContent=cat.label;c.dataset.cat=cat.id;
-      c.onclick=()=>{
-        if(activeCats.has(cat.id)){activeCats.delete(cat.id);document.querySelectorAll(`.chip[data-cat="${cat.id}"]`).forEach(x=>x.classList.remove('on'));}
-        else{activeCats.add(cat.id);document.querySelectorAll(`.chip[data-cat="${cat.id}"]`).forEach(x=>x.classList.add('on'));}
-        render();
-      };
-      g.appendChild(c);
-    });
-  });
+document.querySelectorAll(’#fgrid’).forEach(g=>{
+g.innerHTML=’’;
+CATS.forEach(cat=>{
+const c=document.createElement(‘div’);
+c.className=‘chip on’;c.textContent=cat.label;c.dataset.cat=cat.id;
+c.onclick=()=>{
+if(activeCats.has(cat.id)){activeCats.delete(cat.id);document.querySelectorAll(`.chip[data-cat="${cat.id}"]`).forEach(x=>x.classList.remove(‘on’));}
+else{activeCats.add(cat.id);document.querySelectorAll(`.chip[data-cat="${cat.id}"]`).forEach(x=>x.classList.add(‘on’));}
+render();
+};
+g.appendChild(c);
+});
+});
 }
 
 // ─── DECODE ───────────────────────────────────────────────────
 async function decodeAll(){
-  let input='';document.querySelectorAll('#inputText').forEach(el=>{if(el.value.trim())input=el.value;});
-  let key='';document.querySelectorAll('#cipherKey').forEach(el=>{if(el.value)key=el.value;});
-  if(!input.trim()){notify('No input provided');return;}
-  results=[];
-  for(const dec of DECODERS){
-    let out,err=false;
-    try{out=dec.fn(input,key);if(out==null)throw new Error('null');out=String(out);}
-    catch(e){out='[Error: '+e.message+']';err=true;}
-    const sc=err?0:wordScore(out);
-    results.push({id:dec.id,name:dec.name,cat:dec.cat,out,err,hw:!err&&sc>=1,score:sc,yt:false});
-  }
-  const pf=document.getElementById('pfill');pf.style.width='60%';
-  render();updateStats();closeDr();
-  notify('Checking dictionary\u2026');
-  enrichWithDictionary(results).then(()=>{
-    sortResults();
-    pf.style.width='100%';setTimeout(()=>pf.style.width='0%',600);
-    render();updateStats();
-    notify('Done \u2014 '+results.filter(r=>r.hw).length+' contain words');
-  });
+let input=’’;document.querySelectorAll(’#inputText’).forEach(el=>{if(el.value.trim())input=el.value;});
+let key=’’;document.querySelectorAll(’#cipherKey’).forEach(el=>{if(el.value)key=el.value;});
+if(!input.trim()){notify(‘No input provided’);return;}
+results=[];
+for(const dec of DECODERS){
+let out,err=false;
+try{out=dec.fn(input,key);if(out==null)throw new Error(‘null’);out=String(out);}
+catch(e){out=’[Error: ‘+e.message+’]’;err=true;}
+const sc=err?0:wordScore(out);
+results.push({id:dec.id,name:dec.name,cat:dec.cat,out,err,hw:!err&&sc>=1,score:sc,yt:false});
+}
+const pf=document.getElementById(‘pfill’);pf.style.width=‘60%’;
+render();updateStats();closeDr();
+notify(‘Checking dictionary\u2026’);
+enrichWithDictionary(results).then(()=>{
+sortResults();
+pf.style.width=‘100%’;setTimeout(()=>pf.style.width=‘0%’,600);
+render();updateStats();
+notify(‘Done \u2014 ‘+results.filter(r=>r.hw).length+’ contain words’);
+});
 }
 
 function sortResults(){
-  results.sort((a,b)=>{
-    if(a.err&&!b.err)return 1;
-    if(!a.err&&b.err)return -1;
-    return b.score-a.score;
-  });
+results.sort((a,b)=>{
+if(a.err&&!b.err)return 1;
+if(!a.err&&b.err)return -1;
+return b.score-a.score;
+});
 }
 
 // ─── FETCH CORRECT ────────────────────────────────────────────
 function fetchCorrect(){
-  if(!results.length){notify('Decode first');return;}
-  const b=results.length;results=results.filter(r=>r.hw);
-  sortResults();
-  render();updateStats();notify(`Kept ${results.length} of ${b} with words`);
+if(!results.length){notify(‘Decode first’);return;}
+const b=results.length;results=results.filter(r=>r.hw);
+sortResults();
+render();updateStats();notify(`Kept ${results.length} of ${b} with words`);
 }
 
 // ─── URL CHECK ────────────────────────────────────────────────
 function checkYoutube(){
-  if(!results.length){notify('Decode first');return;}
-  let cnt=0;
-  results.forEach(r=>{
-    r.yt=/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/(?:shorts|embed|v)\/)[\w-]{11}/.test(r.out);
-    if(r.yt)cnt++;
-  });
-  render();updateStats();notify(cnt?`Found ${cnt} YouTube URL${cnt>1?'s':''}!`:'No YouTube URLs found');
+if(!results.length){notify(‘Decode first’);return;}
+let cnt=0;
+results.forEach(r=>{
+r.yt=/(?:youtube.com/watch?v=|youtu.be/|youtube.com/(?:shorts|embed|v)/)[\w-]{11}/.test(r.out);
+if(r.yt)cnt++;
+});
+render();updateStats();notify(cnt?`Found ${cnt} YouTube URL${cnt>1?'s':''}!`:‘No YouTube URLs found’);
 }
 
 // ─── COPY WORDS ───────────────────────────────────────────────
 function copyWords(){
-  const w=results.filter(r=>r.hw);
-  if(!w.length){notify('No word-results to copy');return;}
-  navigator.clipboard.writeText(w.map(r=>`[${r.name}]\n${r.out}`).join('\n\n')).then(()=>notify('Copied '+w.length+' results'));
+const w=results.filter(r=>r.hw);
+if(!w.length){notify(‘No word-results to copy’);return;}
+navigator.clipboard.writeText(w.map(r=>`[${r.name}]\n${r.out}`).join(’\n\n’)).then(()=>notify(‘Copied ‘+w.length+’ results’));
 }
 
 // ─── RENDER ───────────────────────────────────────────────────
 function render(){
-  const grid=document.getElementById('rgrid');
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  const vis=results.filter(r=>{
-    if(!activeCats.has(r.cat))return false;
-    if(q&&!r.name.toLowerCase().includes(q)&&!r.out.toLowerCase().includes(q))return false;
-    return true;
-  });
-  document.getElementById('activeCount').textContent=vis.length+' results';
-  if(!vis.length){
-    grid.innerHTML=results.length
-      ?'<div class="empty"><div class="eg">∅</div><div class="em">No matches</div><div class="es">Adjust filters or search term</div></div>'
-      :'<div class="empty"><div class="eg">{ ? }</div><div class="em">Awaiting Input</div><div class="es">Paste encoded text and press Decode All</div></div>';
-    return;
-  }
-  // Sort vis: words first by score, errors last
-  vis.sort((a,b)=>{
-    if(a.err&&!b.err)return 1;
-    if(!a.err&&b.err)return -1;
-    return (b.score||0)-(a.score||0);
-  });
+const grid=document.getElementById(‘rgrid’);
+const q=document.getElementById(‘searchInput’).value.toLowerCase();
+const vis=results.filter(r=>{
+if(!activeCats.has(r.cat))return false;
+if(q&&!r.name.toLowerCase().includes(q)&&!r.out.toLowerCase().includes(q))return false;
+return true;
+});
+document.getElementById(‘activeCount’).textContent=vis.length+’ results’;
+if(!vis.length){
+grid.innerHTML=results.length
+?’<div class="empty"><div class="eg">∅</div><div class="em">No matches</div><div class="es">Adjust filters or search term</div></div>’
+:’<div class="empty"><div class="eg">{ ? }</div><div class="em">Awaiting Input</div><div class="es">Paste encoded text and press Decode All</div></div>’;
+return;
+}
+// Sort vis: words first by score, errors last
+vis.sort((a,b)=>{
+if(a.err&&!b.err)return 1;
+if(!a.err&&b.err)return -1;
+return (b.score||0)-(a.score||0);
+});
 
-  // Words-first grouping: split into words, no-words, errors
-  const wordHits=vis.filter(r=>r.hw&&!r.err);
-  const noWords=vis.filter(r=>!r.hw&&!r.err);
-  const errors=vis.filter(r=>r.err);
+// Words-first grouping: split into words, no-words, errors
+const wordHits=vis.filter(r=>r.hw&&!r.err);
+const noWords=vis.filter(r=>!r.hw&&!r.err);
+const errors=vis.filter(r=>r.err);
 
-  let html='';
+let html=’’;
 
-  if(wordHits.length){
-    html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl" style="color:var(--accent)">&#9670; Word Matches — sorted by score</div><div class="cdiv-line"></div></div>`;
-    wordHits.forEach((r,idx)=>{
-      const sc=Math.round(r.score||0);
-      const scoreBar=sc>0?`<span class="ctag tw" style="font-size:9px;letter-spacing:0;padding:1px 6px;min-width:38px;text-align:center">${sc} word${sc!==1?'s':''}</span>`:'';
-      const ytTag=r.yt?'<span class="ctag tyt">YouTube</span>':'';
-      const topClass=idx===0&&sc>0?' top':'';
-      const topBadge=idx===0&&sc>0?'<span class="ctag" style="background:rgba(255,170,0,.15);color:#ffaa00;border:1px solid rgba(255,170,0,.4);font-size:9px">&#9650; TOP</span>':'';
-      html+=cardHTMLCls(r,`${ytTag}${topBadge}${scoreBar}`,topClass);
-    });
-  }
+if(wordHits.length){
+html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl" style="color:var(--accent)">&#9670; Word Matches — sorted by score</div><div class="cdiv-line"></div></div>`;
+wordHits.forEach((r,idx)=>{
+const sc=Math.round(r.score||0);
+const scoreBar=sc>0?`<span class="ctag tw" style="font-size:9px;letter-spacing:0;padding:1px 6px;min-width:38px;text-align:center">${sc} word${sc!==1?'s':''}</span>`:’’;
+const ytTag=r.yt?’<span class="ctag tyt">YouTube</span>’:’’;
+const topClass=idx===0&&sc>0?’ top’:’’;
+const topBadge=idx===0&&sc>0?’<span class="ctag" style="background:rgba(255,170,0,.15);color:#ffaa00;border:1px solid rgba(255,170,0,.4);font-size:9px">▲ TOP</span>’:’’;
+html+=cardHTMLCls(r,`${ytTag}${topBadge}${scoreBar}`,topClass);
+});
+}
 
-  if(noWords.length){
-    html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl">No words detected</div><div class="cdiv-line"></div></div>`;
-    noWords.forEach(r=>{
-      const ytTag=r.yt?'<span class="ctag tyt">YouTube</span>':'';
-      html+=cardHTML(r,ytTag);
-    });
-  }
+if(noWords.length){
+html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl">No words detected</div><div class="cdiv-line"></div></div>`;
+noWords.forEach(r=>{
+const ytTag=r.yt?’<span class="ctag tyt">YouTube</span>’:’’;
+html+=cardHTML(r,ytTag);
+});
+}
 
-  if(errors.length&&showErrors){
-    html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl" style="color:var(--muted)">Decode errors</div><div class="cdiv-line"></div></div>`;
-    errors.forEach(r=>{ html+=cardHTML(r,'<span class="ctag ter">Error</span>'); });
-  }
+if(errors.length&&showErrors){
+html+=`<div class="cdiv"><div class="cdiv-line"></div><div class="cdiv-lbl" style="color:var(--muted)">Decode errors</div><div class="cdiv-line"></div></div>`;
+errors.forEach(r=>{ html+=cardHTML(r,’<span class="ctag ter">Error</span>’); });
+}
 
-  function cardHTMLCls(r,tags,extra=''){
-    return `<div class="rc ${r.hw&&!r.err?'hw':''} ${r.yt?'yt':''} ${r.err?'er':''}${extra}" id="c${r.id}">
+function cardHTMLCls(r,tags,extra=’’){
+return `<div class="rc ${r.hw&&!r.err?'hw':''} ${r.yt?'yt':''} ${r.err?'er':''}${extra}" id="c${r.id}">
+
 <div class="chdr"><span class="cnum" title="${r.cat}">#${r.id}</span><span class="cname">${r.name}</span>${tags}<button class="cbtn" onclick="cp(${r.id},event)">COPY</button></div>
 <textarea class="cta" readonly spellcheck="false"></textarea>
 </div>`;
@@ -582,48 +606,49 @@ function render(){
 }
 
 function cp(id,e){
-  e.stopPropagation();
-  const r=results.find(x=>x.id===id);if(!r)return;
-  navigator.clipboard.writeText(r.out).then(()=>{
-    const b=document.querySelector(`#c${id} .cbtn`);
-    if(b){b.textContent='✓';b.classList.add('ok');setTimeout(()=>{b.textContent='COPY';b.classList.remove('ok');},1400);}
-  });
+e.stopPropagation();
+const r=results.find(x=>x.id===id);if(!r)return;
+navigator.clipboard.writeText(r.out).then(()=>{
+const b=document.querySelector(`#c${id} .cbtn`);
+if(b){b.textContent=‘✓’;b.classList.add(‘ok’);setTimeout(()=>{b.textContent=‘COPY’;b.classList.remove(‘ok’);},1400);}
+});
 }
 
 function toggleErrors(){
-  showErrors=!showErrors;
-  const btn=document.getElementById('errToggleBtn');
-  if(btn)btn.textContent=showErrors?'\u2298 Hide Errors':'\u2295 Show Errors';
-  render();
+showErrors=!showErrors;
+const btn=document.getElementById(‘errToggleBtn’);
+if(btn)btn.textContent=showErrors?’\u2298 Hide Errors’:’\u2295 Show Errors’;
+render();
 }
 
 function updateStats(){
-  const ids=['si0','si1','si2','si3','si4'];
-  const topScore=results.filter(r=>r.hw).reduce((m,r)=>Math.max(m,r.score||0),0);
-  const vals=[results.length,results.filter(r=>r.hw).length,results.filter(r=>r.err).length,results.filter(r=>r.yt).length,Math.round(topScore)];
-  ids.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=vals[i];});
+const ids=[‘si0’,‘si1’,‘si2’,‘si3’,‘si4’];
+const topScore=results.filter(r=>r.hw).reduce((m,r)=>Math.max(m,r.score||0),0);
+const vals=[results.length,results.filter(r=>r.hw).length,results.filter(r=>r.err).length,results.filter(r=>r.yt).length,Math.round(topScore)];
+ids.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=vals[i];});
 }
 
 function clearAll(){
-  results=[];
-  document.querySelectorAll('#inputText').forEach(el=>el.value='');
-  document.querySelectorAll('#cipherKey').forEach(el=>el.value='');
-  document.querySelectorAll('#charCount').forEach(el=>el.textContent='0');
-  document.getElementById('activeCount').textContent='0 results';
-  render();updateStats();
+results=[];
+document.querySelectorAll(’#inputText’).forEach(el=>el.value=’’);
+document.querySelectorAll(’#cipherKey’).forEach(el=>el.value=’’);
+document.querySelectorAll(’#charCount’).forEach(el=>el.textContent=‘0’);
+document.getElementById(‘activeCount’).textContent=‘0 results’;
+render();updateStats();
 }
 
 function notify(msg){
-  const n=document.getElementById('notif');n.textContent=msg;n.classList.add('on');
-  clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('on'),2800);
+const n=document.getElementById(‘notif’);n.textContent=msg;n.classList.add(‘on’);
+clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove(‘on’),2800);
 }
 
-function openDr(){document.getElementById('dr').classList.add('on');document.getElementById('ov').classList.add('on');}
-function closeDr(){document.getElementById('dr').classList.remove('on');document.getElementById('ov').classList.remove('on');}
+function openDr(){document.getElementById(‘dr’).classList.add(‘on’);document.getElementById(‘ov’).classList.add(‘on’);}
+function closeDr(){document.getElementById(‘dr’).classList.remove(‘on’);document.getElementById(‘ov’).classList.remove(‘on’);}
 
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')decodeAll();});
+document.addEventListener(‘keydown’,e=>{if((e.ctrlKey||e.metaKey)&&e.key===‘Enter’)decodeAll();});
 
 buildPanel();
 </script>
+
 </body>
 </html>
