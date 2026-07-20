@@ -182,9 +182,13 @@ body {
   pointer-events: none;
 }
 .photo-slot img {
+  /* "contain" locks the photo's own aspect ratio and scales it to
+     fit fully inside the frame with no cropping (letterboxed on the
+     pattern background if the ratio doesn't match the slot). */
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
 }
 .photo-hint {
   font-family: 'Cinzel', serif;
@@ -207,6 +211,7 @@ body {
 }
 .field input {
   width: 100%;
+  max-width: 100%;
   background: transparent;
   border: none;
   border-bottom: 1px solid #6b5527;
@@ -215,6 +220,12 @@ body {
   font-size: 17px;
   padding: 2px 0 5px;
   outline: none;
+  /* Safety net: a value that's still too long to shrink to a sane
+     size just clips instead of spilling past the card border. */
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  display: block;
 }
 .field input::placeholder { color: #5a4a28; font-style: italic; }
 .field input:focus { border-bottom-color: #e9c874; }
@@ -317,8 +328,26 @@ body {
   cursor: pointer;
 }
 .btn:hover { border-color: #e9c874; color: #ffe9a8; }
+.btn:disabled { opacity: 0.5; cursor: default; }
 
 input[type="file"] { display: none; }
+
+/* Off-screen export rig: real, correctly-sized, position:relative
+   boxes that the face clones get dropped into. This is what actually
+   fixes the overflow — the .face element keeps its normal
+   top/right/bottom/left:0 fill behavior instead of fighting an
+   inline width/height on the same element, which is what was making
+   html2canvas size it wrong. */
+.export-rig {
+  position: fixed;
+  top: 0;
+  left: -99999px;
+  pointer-events: none;
+}
+.export-box {
+  position: relative;
+  overflow: hidden;
+}
 
 @media print {
   @page { size: 175.2mm 53.98mm; margin: 0; }
@@ -430,7 +459,7 @@ input[type="file"] { display: none; }
 
 <div class="controls">
   <button class="btn" onclick="flipCard()">Virar carta</button>
-  <button class="btn" onclick="saveImage()">Salvar (frente e verso)</button>
+  <button class="btn" id="saveBtn" onclick="saveImage()">Salvar (frente e verso)</button>
   <button class="btn" onclick="window.print()">Imprimir</button>
 </div>
 <div class="hint-text">clique na carta ou no botão para ver a frente/verso</div>
@@ -441,6 +470,9 @@ const photoSlot = document.getElementById('photoSlot');
 const photoInput = document.getElementById('photoInput');
 const frontFace = document.getElementById('frontFace');
 const backFace = document.getElementById('backFace');
+const nomeInput = document.getElementById('nomeInput');
+const cargoInput = document.getElementById('cargoInput');
+const saveBtn = document.getElementById('saveBtn');
 
 function flipCard() {
   card.classList.toggle('flipped');
@@ -461,45 +493,76 @@ photoInput.addEventListener('change', (e) => {
   reader.readAsDataURL(file);
 });
 
+/* --- Auto-fit text: shrinks an input's font-size step by step until
+   its content actually fits inside its own box, instead of letting
+   long names/titles run past the card edge. Used live on screen and
+   again on the export clones. --- */
+const BASE_FONT_SIZE = 17;
+const MIN_FONT_SIZE = 10;
+
+function fitInputText(input) {
+  input.style.fontSize = BASE_FONT_SIZE + 'px';
+  let size = BASE_FONT_SIZE;
+  while (input.scrollWidth > input.clientWidth && size > MIN_FONT_SIZE) {
+    size -= 0.5;
+    input.style.fontSize = size + 'px';
+  }
+}
+
+[nomeInput, cargoInput].forEach((input) => {
+  input.addEventListener('input', () => fitInputText(input));
+});
+
 const CARD_PX_W = 856;
 const CARD_PX_H = 540;
 const GAP_PX = 40;
 
-function makeExportClone(source) {
+// Off-screen rig the export boxes live in, appended once.
+const exportRig = document.createElement('div');
+exportRig.className = 'export-rig';
+document.body.appendChild(exportRig);
+
+function makeExportClone(source, extraClass) {
+  const box = document.createElement('div');
+  box.className = 'export-box';
+  box.style.width = CARD_PX_W + 'px';
+  box.style.height = CARD_PX_H + 'px';
+
   const clone = source.cloneNode(true);
-  clone.style.position = 'absolute';
-  clone.style.top = '0';
-  clone.style.left = '0';
-  clone.style.width = CARD_PX_W + 'px';
-  clone.style.height = CARD_PX_H + 'px';
+  // Let the face fill its (correctly sized) parent the same way it
+  // does on screen — no inline width/height fighting position:absolute.
   clone.style.transform = 'none';
   clone.style.margin = '0';
-  clone.style.opacity = '0';
-  clone.style.pointerEvents = 'none';
-  clone.style.zIndex = '-1';
+  if (extraClass) clone.classList.add(extraClass);
 
   // Text typed into <input> lives in the DOM property, not the HTML
   // attribute, so cloneNode won't carry it over — copy it manually.
   const nomeClone = clone.querySelector('#nomeInput');
   const cargoClone = clone.querySelector('#cargoInput');
-  if (nomeClone) nomeClone.setAttribute('value', nomeInput.value);
-  if (cargoClone) cargoClone.setAttribute('value', cargoInput.value);
+  if (nomeClone) nomeClone.value = nomeInput.value;
+  if (cargoClone) cargoClone.value = cargoInput.value;
 
-  document.body.appendChild(clone);
-  return clone;
+  box.appendChild(clone);
+  exportRig.appendChild(box);
+  return { box, clone, nomeClone, cargoClone };
 }
 
 async function saveImage() {
-  const frontClone = makeExportClone(frontFace);
-  frontClone.classList.add('trim-right');
-  const backClone = makeExportClone(backFace);
-  backClone.classList.add('trim-left');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Salvando...';
+
+  const front = makeExportClone(frontFace, 'trim-right');
+  const back = makeExportClone(backFace, 'trim-left');
 
   try {
     if (document.fonts && document.fonts.ready) {
       await document.fonts.ready;
     }
+    // Let the clones settle into layout before measuring/shrinking text.
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    if (front.nomeClone) fitInputText(front.nomeClone);
+    if (front.cargoClone) fitInputText(front.cargoClone);
 
     const canvasOpts = {
       backgroundColor: null,
@@ -507,19 +570,20 @@ async function saveImage() {
       height: CARD_PX_H,
       windowWidth: CARD_PX_W,
       windowHeight: CARD_PX_H,
-      scale: 1,
+      scale: 2,
       useCORS: true
     };
-    const frontCanvas = await html2canvas(frontClone, canvasOpts);
-    const backCanvas = await html2canvas(backClone, canvasOpts);
+    const frontCanvas = await html2canvas(front.box, canvasOpts);
+    const backCanvas = await html2canvas(back.box, canvasOpts);
 
+    const scale = frontCanvas.width / CARD_PX_W;
     const combined = document.createElement('canvas');
-    combined.width = CARD_PX_W * 2 + GAP_PX;
-    combined.height = CARD_PX_H;
+    combined.width = (CARD_PX_W * 2 + GAP_PX) * scale;
+    combined.height = CARD_PX_H * scale;
     const ctx = combined.getContext('2d');
     ctx.clearRect(0, 0, combined.width, combined.height);
     ctx.drawImage(frontCanvas, 0, 0);
-    ctx.drawImage(backCanvas, CARD_PX_W + GAP_PX, 0);
+    ctx.drawImage(backCanvas, (CARD_PX_W + GAP_PX) * scale, 0);
 
     const link = document.createElement('a');
     link.download = 'certificado-frente-verso.png';
@@ -529,8 +593,10 @@ async function saveImage() {
     console.error('Erro ao salvar imagem:', err);
     alert('Não foi possível salvar a imagem: ' + err.message);
   } finally {
-    frontClone.remove();
-    backClone.remove();
+    front.box.remove();
+    back.box.remove();
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Salvar (frente e verso)';
   }
 }
 </script>
