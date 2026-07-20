@@ -102,7 +102,20 @@ body {
 .corner.br { bottom: 13px; right: 13px; border-left: none; border-top: none; }
 
 /* FRONT */
-.front { display: flex; flex-direction: column; z-index: 2; }
+.front { z-index: 2; }
+
+.face-inner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.face::before, .face::after { z-index: 0; pointer-events: none; }
+
+.front.trim-right::before, .front.trim-right::after { border-right: none; }
+.back.trim-left::before, .back.trim-left::after { border-left: none; }
 
 .eyebrow {
   text-align: center;
@@ -219,11 +232,9 @@ body {
 /* BACK */
 .back {
   transform: rotateY(180deg);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   z-index: 1;
 }
+.back .face-inner { justify-content: center; }
 
 .back-title {
   text-align: center;
@@ -235,6 +246,7 @@ body {
 }
 
 .ledger { padding: 0 22px; display: flex; flex-direction: column; gap: 13px; }
+.back .ledger { padding-right: 95px; }
 
 .ledger-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .ledger-key {
@@ -255,6 +267,7 @@ body {
 
 .stamp {
   position: absolute;
+  z-index: 1;
   bottom: 16px;
   right: 20px;
   width: 58px;
@@ -338,6 +351,8 @@ input[type="file"] { display: none; }
     border-radius: 0;
     flex: 0 0 auto;
   }
+  .front::before, .front::after { border-right: none; }
+  .back::before, .back::after { border-left: none; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
@@ -351,38 +366,41 @@ input[type="file"] { display: none; }
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
 
-      <div class="eyebrow">Conselho dos Sem Noção</div>
-      <div class="title">Certificado de Sem Noção Profissional</div>
-      <div class="divider"></div>
+      <div class="face-inner">
+        <div class="eyebrow">Conselho dos Sem Noção</div>
+        <div class="title">Certificado de Sem Noção Profissional</div>
+        <div class="divider"></div>
 
-      <div class="content-row">
-        <div class="photo-slot" id="photoSlot" onclick="document.getElementById('photoInput').click()">
-          <span class="photo-hint">clique para<br>adicionar foto</span>
-        </div>
-        <input type="file" id="photoInput" accept="image/*">
+        <div class="content-row">
+          <div class="photo-slot" id="photoSlot" onclick="document.getElementById('photoInput').click()">
+            <span class="photo-hint">clique para<br>adicionar foto</span>
+          </div>
+          <input type="file" id="photoInput" accept="image/*">
 
-        <div class="fields">
-          <div class="field">
-            <label>Nome:</label>
-            <input type="text" id="nomeInput" placeholder="Digite o nome" onclick="event.stopPropagation()">
-          </div>
-          <div class="field">
-            <label>Cargo:</label>
-            <input type="text" id="cargoInput" placeholder="Digite o cargo" onclick="event.stopPropagation()">
+          <div class="fields">
+            <div class="field">
+              <label>Nome:</label>
+              <input type="text" id="nomeInput" placeholder="Digite o nome" onclick="event.stopPropagation()">
+            </div>
+            <div class="field">
+              <label>Cargo:</label>
+              <input type="text" id="cargoInput" placeholder="Digite o cargo" onclick="event.stopPropagation()">
+            </div>
           </div>
         </div>
+
+        <div class="seal-mini">✦ VÁLIDO EM TODO TERRITÓRIO DO CARALHO ✦</div>
       </div>
-
-      <div class="seal-mini">✦ VÁLIDO EM TODO TERRITÓRIO DO CARALHO ✦</div>
     </div>
 
     <div class="face back" id="backFace">
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
 
-      <div class="back-title">— DETALHES DA CREDENCIAL —</div>
+      <div class="face-inner">
+        <div class="back-title">— DETALHES DA CREDENCIAL —</div>
 
-      <div class="ledger">
+        <div class="ledger">
         <div class="ledger-row">
           <div class="ledger-key">CARGO:</div>
           <div class="ledger-val">Especialista em Sem Noção</div>
@@ -399,6 +417,7 @@ input[type="file"] { display: none; }
           <div class="ledger-key">CERTIFICAÇÃO:</div>
           <div class="ledger-val">Aprovado pelo Conselho dos Sem Noção</div>
         </div>
+      </div>
       </div>
 
       <div class="stamp">
@@ -472,7 +491,9 @@ function makeExportClone(source) {
 
 async function saveImage() {
   const frontClone = makeExportClone(frontFace);
+  frontClone.classList.add('trim-right');
   const backClone = makeExportClone(backFace);
+  backClone.classList.add('trim-left');
 
   try {
     if (document.fonts && document.fonts.ready) {
