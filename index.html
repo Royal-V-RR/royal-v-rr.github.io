@@ -47,7 +47,10 @@ body {
 
 .face {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   backface-visibility: hidden;
   border-radius: 14px;
   background:
@@ -66,7 +69,10 @@ body {
 .face::before {
   content: '';
   position: absolute;
-  inset: 7px;
+  top: 7px;
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
   border: 1px solid #6b5527;
   border-radius: 8px;
   pointer-events: none;
@@ -74,7 +80,10 @@ body {
 .face::after {
   content: '';
   position: absolute;
-  inset: 11px;
+  top: 11px;
+  right: 11px;
+  bottom: 11px;
+  left: 11px;
   border: 1px solid rgba(212,175,90,0.35);
   border-radius: 6px;
   pointer-events: none;
@@ -152,7 +161,10 @@ body {
 .photo-slot::before {
   content: '';
   position: absolute;
-  inset: 4px;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  left: 4px;
   border: 1px dashed rgba(201,168,86,0.5);
   pointer-events: none;
 }
@@ -297,7 +309,7 @@ input[type="file"] { display: none; }
 
 @media print {
   @page { size: 175.2mm 53.98mm; margin: 0; }
-  body { background: #000; padding: 0; gap: 0; }
+  body { background: transparent; padding: 0; gap: 0; }
   .controls, .hint-text { display: none; }
   .stage {
     perspective: none;
@@ -436,13 +448,16 @@ const GAP_PX = 40;
 
 function makeExportClone(source) {
   const clone = source.cloneNode(true);
-  clone.style.position = 'fixed';
-  clone.style.top = '-9999px';
-  clone.style.left = '-9999px';
+  clone.style.position = 'absolute';
+  clone.style.top = '0';
+  clone.style.left = '0';
   clone.style.width = CARD_PX_W + 'px';
   clone.style.height = CARD_PX_H + 'px';
   clone.style.transform = 'none';
   clone.style.margin = '0';
+  clone.style.opacity = '0';
+  clone.style.pointerEvents = 'none';
+  clone.style.zIndex = '-1';
 
   // Text typed into <input> lives in the DOM property, not the HTML
   // attribute, so cloneNode won't carry it over — copy it manually.
@@ -459,28 +474,29 @@ async function saveImage() {
   const frontClone = makeExportClone(frontFace);
   const backClone = makeExportClone(backFace);
 
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
   try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
     const canvasOpts = {
-      backgroundColor: '#0c0a08',
+      backgroundColor: null,
       width: CARD_PX_W,
       height: CARD_PX_H,
       windowWidth: CARD_PX_W,
       windowHeight: CARD_PX_H,
-      scale: 1
+      scale: 1,
+      useCORS: true
     };
-    const [frontCanvas, backCanvas] = await Promise.all([
-      html2canvas(frontClone, canvasOpts),
-      html2canvas(backClone, canvasOpts)
-    ]);
+    const frontCanvas = await html2canvas(frontClone, canvasOpts);
+    const backCanvas = await html2canvas(backClone, canvasOpts);
 
     const combined = document.createElement('canvas');
     combined.width = CARD_PX_W * 2 + GAP_PX;
     combined.height = CARD_PX_H;
     const ctx = combined.getContext('2d');
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, combined.width, combined.height);
+    ctx.clearRect(0, 0, combined.width, combined.height);
     ctx.drawImage(frontCanvas, 0, 0);
     ctx.drawImage(backCanvas, CARD_PX_W + GAP_PX, 0);
 
@@ -489,10 +505,11 @@ async function saveImage() {
     link.href = combined.toDataURL('image/png');
     link.click();
   } catch (err) {
-    alert('Não foi possível salvar a imagem.');
+    console.error('Erro ao salvar imagem:', err);
+    alert('Não foi possível salvar a imagem: ' + err.message);
   } finally {
-    document.body.removeChild(frontClone);
-    document.body.removeChild(backClone);
+    frontClone.remove();
+    backClone.remove();
   }
 }
 </script>
