@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certificado de Sem Noção Profissional</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 20%, #1a1712 0%, #080706 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  font-family: 'Cormorant Garamond', serif;
+  gap: 20px;
+}
+
+.stage {
+  perspective: 2200px;
+  width: 600px;
+  max-width: 92vw;
+  height: 400px;
+}
+
+@media (max-width: 640px) {
+  .stage { height: 460px; }
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(.4,.1,.2,1);
+  cursor: pointer;
+}
+
+.card.flipped { transform: rotateY(180deg); }
+
+.face {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  backface-visibility: hidden;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(212,175,90,0.08), transparent 40%),
+    linear-gradient(155deg, #0c0a08 0%, #151009 55%, #0c0a08 100%);
+  border: 1px solid #7a5f2b;
+  box-shadow:
+    0 0 0 1px rgba(212,175,90,0.15),
+    0 20px 50px rgba(0,0,0,0.6),
+    inset 0 0 40px rgba(212,175,90,0.05);
+  padding: 16px 20px;
+  color: #e9d9ab;
+  overflow: hidden;
+}
+
+.face::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
+  border: 1px solid #6b5527;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.face::after {
+  content: '';
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  bottom: 11px;
+  left: 11px;
+  border: 1px solid rgba(212,175,90,0.35);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid #c9a856;
+  opacity: 0.85;
+}
+.corner.tl { top: 13px; left: 13px; border-right: none; border-bottom: none; }
+.corner.tr { top: 13px; right: 13px; border-left: none; border-bottom: none; }
+.corner.bl { bottom: 13px; left: 13px; border-right: none; border-top: none; }
+.corner.br { bottom: 13px; right: 13px; border-left: none; border-top: none; }
+
+/* FRONT */
+.front { display: flex; flex-direction: column; z-index: 2; }
+
+.eyebrow {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 3.5px;
+  color: #a9863f;
+  margin-top: 4px;
+}
+
+.title {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(14px, 4vw, 19px);
+  letter-spacing: 0.5px;
+  margin: 5px 0 0;
+  background: linear-gradient(180deg, #f3e3ae, #b98f3f 60%, #f3e3ae);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+  line-height: 1.2;
+}
+
+.divider {
+  width: 100px;
+  height: 1px;
+  margin: 9px auto 9px;
+  background: linear-gradient(90deg, transparent, #c9a856, transparent);
+  flex-shrink: 0;
+}
+
+.content-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 4px;
+  min-height: 0;
+}
+
+.photo-slot {
+  flex: 0 0 110px;
+  height: 130px;
+  border: 1.5px solid #c9a856;
+  border-radius: 4px;
+  position: relative;
+  background: repeating-linear-gradient(135deg, #14100a, #14100a 6px, #191309 6px, #191309 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.photo-slot::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  left: 4px;
+  border: 1px dashed rgba(201,168,86,0.5);
+  pointer-events: none;
+}
+.photo-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-hint {
+  font-family: 'Cinzel', serif;
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
+  color: #8a6f38;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.fields { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.field label {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  color: #a9863f;
+  margin-bottom: 3px;
+}
+.field input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #6b5527;
+  color: #f3e6bd;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  padding: 2px 0 5px;
+  outline: none;
+}
+.field input::placeholder { color: #5a4a28; font-style: italic; }
+.field input:focus { border-bottom-color: #e9c874; }
+
+.seal-mini {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 7.5px;
+  letter-spacing: 1.5px;
+  color: #6b5527;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+/* BACK */
+.back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 1;
+}
+
+.back-title {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  color: #a9863f;
+  margin-bottom: 16px;
+}
+
+.ledger { padding: 0 22px; display: flex; flex-direction: column; gap: 13px; }
+
+.ledger-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.ledger-key {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 1.3px;
+  color: #c9a856;
+  flex: 0 0 130px;
+}
+.ledger-val {
+  font-size: 16px;
+  color: #f0e2b6;
+  font-style: italic;
+  flex: 1;
+  min-width: 140px;
+  border-bottom: 1px dotted rgba(201,168,86,0.3);
+}
+
+.stamp {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  width: 58px;
+  height: 58px;
+  border: 2px solid #b8934a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-14deg);
+  opacity: 0.75;
+}
+.stamp-inner {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #b8934a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 6.5px;
+  letter-spacing: 0.4px;
+  color: #b8934a;
+  text-align: center;
+  line-height: 1.3;
+  padding: 3px;
+}
+
+.hint-text {
+  color: #8a7a52;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.btn {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: #f3e6bd;
+  background: linear-gradient(180deg, #1c1710, #100d09);
+  border: 1px solid #7a5f2b;
+  padding: 9px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn:hover { border-color: #e9c874; color: #ffe9a8; }
+
+input[type="file"] { display: none; }
+
+@media print {
+  @page { size: 175.2mm 53.98mm; margin: 0; }
+  body { background: transparent; padding: 0; gap: 0; }
+  .controls, .hint-text { display: none; }
+  .stage {
+    perspective: none;
+    width: 175.2mm;
+    height: 53.98mm;
+    max-width: none;
+    display: flex;
+    flex-direction: row;
+    gap: 4mm;
+  }
+  .card {
+    display: flex;
+    flex-direction: row;
+    gap: 4mm;
+    transform: none !important;
+    width: 175.2mm;
+    height: 53.98mm;
+    position: static;
+  }
+  .face {
+    position: static;
+    transform: none !important;
+    backface-visibility: visible;
+    width: 85.60mm;
+    height: 53.98mm;
+    border-radius: 0;
+    flex: 0 0 auto;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="card" id="card">
+
+    <div class="face front" id="frontFace">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+
+      <div class="eyebrow">Conselho dos Sem Noção</div>
+      <div class="title">Certificado de Sem Noção Profissional</div>
+      <div class="divider"></div>
+
+      <div class="content-row">
+        <div class="photo-slot" id="photoSlot" onclick="document.getElementById('photoInput').click()">
+          <span class="photo-hint">clique para<br>adicionar foto</span>
+        </div>
+        <input type="file" id="photoInput" accept="image/*">
+
+        <div class="fields">
+          <div class="field">
+            <label>Nome:</label>
+            <input type="text" id="nomeInput" placeholder="Digite o nome" onclick="event.stopPropagation()">
+          </div>
+          <div class="field">
+            <label>Cargo:</label>
+            <input type="text" id="cargoInput" placeholder="Digite o cargo" onclick="event.stopPropagation()">
+          </div>
+        </div>
+      </div>
+
+      <div class="seal-mini">✦ VÁLIDO EM TODO TERRITÓRIO DO CARALHO ✦</div>
+    </div>
+
+    <div class="face back" id="backFace">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+
+      <div class="back-title">— DETALHES DA CREDENCIAL —</div>
+
+      <div class="ledger">
+        <div class="ledger-row">
+          <div class="ledger-key">CARGO:</div>
+          <div class="ledger-val">Especialista em Sem Noção</div>
+        </div>
+        <div class="ledger-row">
+          <div class="ledger-key">ÁREA:</div>
+          <div class="ledger-val">Decisões duvidosas</div>
+        </div>
+        <div class="ledger-row">
+          <div class="ledger-key">EXPERIÊNCIA:</div>
+          <div class="ledger-val">Desde o nascimento</div>
+        </div>
+        <div class="ledger-row">
+          <div class="ledger-key">CERTIFICAÇÃO:</div>
+          <div class="ledger-val">Aprovado pelo Conselho dos Sem Noção</div>
+        </div>
+      </div>
+
+      <div class="stamp">
+        <div class="stamp-inner">OFICIAL<br>★<br>AUTENTICADO</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn" onclick="flipCard()">Virar carta</button>
+  <button class="btn" onclick="saveImage()">Salvar (frente e verso)</button>
+  <button class="btn" onclick="window.print()">Imprimir</button>
+</div>
+<div class="hint-text">clique na carta ou no botão para ver a frente/verso</div>
+
+<script>
+const card = document.getElementById('card');
+const photoSlot = document.getElementById('photoSlot');
+const photoInput = document.getElementById('photoInput');
+const frontFace = document.getElementById('frontFace');
+const backFace = document.getElementById('backFace');
+
+function flipCard() {
+  card.classList.toggle('flipped');
+}
+
+card.addEventListener('click', (e) => {
+  if (e.target.closest('input') || e.target.closest('#photoSlot')) return;
+  flipCard();
+});
+
+photoInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    photoSlot.innerHTML = '<img src="' + ev.target.result + '" alt="foto">';
+  };
+  reader.readAsDataURL(file);
+});
+
+const CARD_PX_W = 856;
+const CARD_PX_H = 540;
+const GAP_PX = 40;
+
+function makeExportClone(source) {
+  const clone = source.cloneNode(true);
+  clone.style.position = 'absolute';
+  clone.style.top = '0';
+  clone.style.left = '0';
+  clone.style.width = CARD_PX_W + 'px';
+  clone.style.height = CARD_PX_H + 'px';
+  clone.style.transform = 'none';
+  clone.style.margin = '0';
+  clone.style.opacity = '0';
+  clone.style.pointerEvents = 'none';
+  clone.style.zIndex = '-1';
+
+  // Text typed into <input> lives in the DOM property, not the HTML
+  // attribute, so cloneNode won't carry it over — copy it manually.
+  const nomeClone = clone.querySelector('#nomeInput');
+  const cargoClone = clone.querySelector('#cargoInput');
+  if (nomeClone) nomeClone.setAttribute('value', nomeInput.value);
+  if (cargoClone) cargoClone.setAttribute('value', cargoInput.value);
+
+  document.body.appendChild(clone);
+  return clone;
+}
+
+async function saveImage() {
+  const frontClone = makeExportClone(frontFace);
+  const backClone = makeExportClone(backFace);
+
+  try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const canvasOpts = {
+      backgroundColor: null,
+      width: CARD_PX_W,
+      height: CARD_PX_H,
+      windowWidth: CARD_PX_W,
+      windowHeight: CARD_PX_H,
+      scale: 1,
+      useCORS: true
+    };
+    const frontCanvas = await html2canvas(frontClone, canvasOpts);
+    const backCanvas = await html2canvas(backClone, canvasOpts);
+
+    const combined = document.createElement('canvas');
+    combined.width = CARD_PX_W * 2 + GAP_PX;
+    combined.height = CARD_PX_H;
+    const ctx = combined.getContext('2d');
+    ctx.clearRect(0, 0, combined.width, combined.height);
+    ctx.drawImage(frontCanvas, 0, 0);
+    ctx.drawImage(backCanvas, CARD_PX_W + GAP_PX, 0);
+
+    const link = document.createElement('a');
+    link.download = 'certificado-frente-verso.png';
+    link.href = combined.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    console.error('Erro ao salvar imagem:', err);
+    alert('Não foi possível salvar a imagem: ' + err.message);
+  } finally {
+    frontClone.remove();
+    backClone.remove();
+  }
+}
+</script>
+
+</body>
+</html>
